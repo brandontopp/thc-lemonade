@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Your Lemonade</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  margin: 0;
+  padding: 20px 16px 28px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #F7F4EE;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 4px 28px rgba(27,58,47,0.10);
+}
+.progress-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8aaa93;
+  margin-bottom: 7px;
+  letter-spacing: 0.02em;
+}
+.progress-track {
+  background: #E8F0EA;
+  border-radius: 99px;
+  height: 5px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.progress-fill {
+  background: #1B3A2F;
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-top {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.quiz-emoji {
+  font-size: 34px;
+  display: block;
+  margin-bottom: 9px;
+  line-height: 1;
+}
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #C8A951;
+  margin-bottom: 7px;
+}
+.question-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1B3A2F;
+  line-height: 1.35;
+}
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.answer-btn {
+  background: #fff;
+  border: 1.5px solid #D5E3D8;
+  border-radius: 12px;
+  padding: 13px 15px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3e35;
+  font-family: inherit;
+  line-height: 1.45;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.answer-btn:hover {
+  background: #EEF5F0;
+  border-color: #1B3A2F;
+  color: #1B3A2F;
+}
+.answer-btn.selected {
+  background: #1B3A2F;
+  border-color: #1B3A2F;
+  color: #fff;
+  transform: scale(0.985);
+}
+.answer-btn:disabled {
+  cursor: default;
+}
+.divider {
+  height: 1px;
+  background: #EBF0EC;
+  margin: 18px 0;
+}
+.result-wrap { text-align: center; }
+.result-emoji {
+  font-size: 42px;
+  display: block;
+  margin-bottom: 10px;
+  animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+@keyframes popIn {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.result-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #C8A951;
+  margin-bottom: 6px;
+}
+.result-heading {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1B3A2F;
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+.result-pill {
+  display: inline-block;
+  background: #EEF5F0;
+  color: #1B3A2F;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 13px;
+  border-radius: 99px;
+  margin-bottom: 14px;
+  letter-spacing: 0.02em;
+}
+.result-desc {
+  font-size: 14px;
+  color: #4f6a58;
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+.cta-btn {
+  display: block;
+  background: #1B3A2F;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, transform 0.12s;
+  margin-bottom: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+.cta-btn:hover {
+  background: #254d3e;
+  transform: translateY(-1px);
+}
+.restart-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #8aaa93;
+  font-family: inherit;
+  text-decoration: underline;
+  padding: 2px 0;
+}
+.restart-btn:hover { color: #1B3A2F; }
+.screen {
+  animation: fadeUp 0.26s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+<div class="card" id="card"></div>
+<script>
+var questions = [
+  {
+    q: "What's your experience with cannabis?",
+    opts: [
+      { t: "Brand new, curious but taking it easy", v: 1 },
+      { t: "I've tried it a few times", v: 2 },
+      { t: "Regular consumer, I know what works for me", v: 3 }
+    ]
+  },
+  {
+    q: "What's the setting?",
+    opts: [
+      { t: "Quiet evening in, winding down", v: 1 },
+      { t: "Low-key hangout with a small group", v: 2 },
+      { t: "Big social event, full energy", v: 3 }
+    ]
+  },
+  {
+    q: "What kind of experience are you after?",
+    opts: [
+      { t: "Something gentle I can ease into", v: 1 },
+      { t: "A noticeable, enjoyable buzz", v: 2 },
+      { t: "I want to feel it properly. I can handle it", v: 3 }
+    ]
+  }
+];
+
+var results = {
+  light: {
+    emoji: "🌿",
+    label: "Your Match",
+    heading: "Start Light",
+    pill: "5mg per can",
+    desc: "Ideal for first-timers and relaxed occasions. You'll feel a gentle shift without going anywhere near the deep end.",
+    cta: "Try Mood's Strawberry Lemonade Seltzer",
+    url: "https://mood.com/product/strawberry-lemonade-seltzer?bcc=beverages"
+  },
+  moderate: {
+    emoji: "🍋",
+    label: "Your Match",
+    heading: "Find Your Groove",
+    pill: "10mg per can",
+    desc: "A noticeable, enjoyable experience for someone who's been here before. You'll feel it properly without overdoing it.",
+    cta: "Try Mood's Strawberry Lemonade Seltzer",
+    url: "https://mood.com/product/strawberry-lemonade-seltzer?bcc=beverages"
+  },
+  strong: {
+    emoji: "🍋",
+    label: "Your Match",
+    heading: "Make It Your Own",
+    pill: "Go custom",
+    desc: "You know what you're doing. Skip the can and make a strong homemade THC lemonade with Mood's 1:1 THC:CBD Tincture (900mg) and fresh lemon juice. Full control over strength, no compromises.",
+    cta: "Get Mood's 1:1 THC:CBD Tincture (900mg)",
+    url: "https://mood.com/product/11-thc-cbd-tincture-900mg"
+  }
+};
+
+var scores = [];
+var current = 0;
+var card = document.getElementById("card");
+
+function render(html) {
+  card.innerHTML = "<div class='screen'>" + html + "</div>";
+  notifyHeight();
+}
+
+function notifyHeight() {
+  setTimeout(function() {
+    var h = document.body.scrollHeight;
+    window.parent.postMessage({ type: "moodQuizHeight", height: h }, "*");
+  }, 50);
+}
+
+function showQuestion(idx) {
+  var q = questions[idx];
+  var pct = Math.round((idx / questions.length) * 100);
+  var opts = q.opts.map(function(o) {
+    return "<button class='answer-btn' onclick='pick(" + o.v + ", this)'>" + o.t + "</button>";
+  }).join("");
+  render(
+    "<div class='progress-label'>Question " + (idx + 1) + " of " + questions.length + "</div>" +
+    "<div class='progress-track'><div class='progress-fill' style='width:" + pct + "%'></div></div>" +
+    "<div class='card-top'>" +
+      "<span class='quiz-emoji'>🍋</span>" +
+      "<div class='eyebrow'>Find Your Lemonade</div>" +
+      "<div class='question-text'>" + q.q + "</div>" +
+    "</div>" +
+    "<div class='answers'>" + opts + "</div>"
+  );
+}
+
+function pick(val, btn) {
+  btn.classList.add("selected");
+  scores.push(val);
+  card.querySelectorAll(".answer-btn").forEach(function(b) { b.disabled = true; });
+  setTimeout(function() {
+    current++;
+    if (current < questions.length) {
+      showQuestion(current);
+    } else {
+      showResult();
+    }
+  }, 320);
+}
+
+function showResult() {
+  var total = scores.reduce(function(a, b) { return a + b; }, 0);
+  var r = total <= 4 ? results.light : total <= 7 ? results.moderate : results.strong;
+  var ctaHtml = r.cta
+    ? "<a class='cta-btn' href='" + r.url + "' target='_blank' rel='noopener'>" + r.cta + "</a>"
+    : "";
+  render(
+    "<div class='progress-label'>Done!</div>" +
+    "<div class='progress-track'><div class='progress-fill' style='width:100%'></div></div>" +
+    "<div class='divider'></div>" +
+    "<div class='result-wrap'>" +
+      "<span class='result-emoji'>" + r.emoji + "</span>" +
+      "<div class='result-label'>" + r.label + "</div>" +
+      "<div class='result-heading'>" + r.heading + "</div>" +
+      "<span class='result-pill'>" + r.pill + "</span>" +
+      "<p class='result-desc'>" + r.desc + "</p>" +
+      ctaHtml +
+      "<button class='restart-btn' onclick='restart()'>Take it again</button>" +
+    "</div>"
+  );
+}
+
+function restart() {
+  scores = [];
+  current = 0;
+  showQuestion(0);
+}
+
+if (window.ResizeObserver) {
+  new ResizeObserver(notifyHeight).observe(document.body);
+}
+
+showQuestion(0);
+</script>
+</body>
+</html>
